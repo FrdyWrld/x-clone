@@ -1,75 +1,52 @@
-# React + TypeScript + Vite
+# X Clone
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Clon de X (Twitter) construido como SPA con React, TypeScript y Vite. Permite registrarse, iniciar sesión, publicar tweets, seguir usuarios y ver un feed.
 
-Currently, two official plugins are available:
+**Estado:** Milestone 1 (maquetación y construcción de la SPA). Los datos son simulados (mock); Firebase se integrará en las siguientes entregas.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Requisitos
 
-## React Compiler
+- Node.js 20 o superior
+- npm
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Instalación y ejecución
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install --legacy-peer-deps
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+La app queda en `http://localhost:5173`. Para el login funciona cualquier usuario y contraseña no vacíos.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Variables de entorno (para Firebase, más adelante): copia `.env.example` a `.env` y completa los valores. `.env` no se sube al repositorio.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Estructura de carpetas
 
 ```
+src/
+├── main.tsx, XCloneApp.tsx, index.css
+├── auth/            contexts/ (AuthContext, AuthProvider, useAuth), reducers/, types/, pages/
+├── social/          SocialContext, SocialProvider, useSocial
+├── types/           social.ts (Tweet, UserProfile)
+├── data/            mockData.ts
+├── firebase/        config.ts, providers.ts (Milestone 2)
+├── helpers/         paginate.ts, formatDate.ts
+├── pages/           Home, Compose, Feed, Following, Followers, UserTweets
+├── routes/          BaseRouter, ProtectedRoute, PublicRoute
+└── ui/components/   NavBar, TweetCard, UserCard, Pagination
+```
+
+## Rutas
+
+| Ruta | Página | Acceso |
+|---|---|---|
+| `/login`, `/register` | Login, Registro | Pública |
+| `/` | Inicio | Protegida |
+| `/compose` | Publicar tweet | Protegida |
+| `/feed` | Feed | Protegida |
+| `/following`, `/followers` | Seguidos, Seguidores | Protegida |
+| `/users/:username` | Tweets de un usuario | Protegida |
+
+## Estrategia de ramas
+
+Ver [`docs/branches.md`](./docs/branches.md): `main` (estable), `develop` (integración) y `feature/<nombre>` (una por funcionalidad).
