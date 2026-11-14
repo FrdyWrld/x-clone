@@ -15,7 +15,6 @@ export const NavBar = () => {
       <div className="container" style={{ maxWidth: 640 }}>
         <Link to="/" className="navbar-brand fw-bold d-flex align-items-center">
           <i className="bi bi-twitter-x me-2"></i>
-          X Clone
         </Link>
 
         {user && (

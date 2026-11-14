@@ -1,56 +1,60 @@
-import { useEffect, useReducer, type ReactNode } from 'react'
-import { AuthContext, type RegisterData } from './AuthContext'
-import { authReducer } from '../reducers/AuthReducer'
-import type { AuthState } from '../types/AuthReducerInterfaces'
-import { users } from '../../data/mockData'
-import { normalizeUsername } from '../../helpers/normalizeUsername'
-
-const KEY = 'xclone-auth'
-
-const init = (): AuthState => {
-  try {
-    const raw = localStorage.getItem(KEY)
-    if (raw) return JSON.parse(raw) as AuthState
-  } catch {
-    // storage not available
-  }
-  return { logged: false, user: null }
-}
+import { useEffect, useReducer, useRef, type ReactNode } from 'react'
+import { AuthContext } from './AuthContext'
+import { authReducer, initialAuthState } from '../reducers/AuthReducer'
+import {
+  fetchProfile,
+  loginWithUsername,
+  logoutUser,
+  onAuthChange,
+  registerUser,
+  signInWithGoogle,
+  type RegisterData,
+} from '../../firebase/providers'
+import type { AuthUser } from '../types/AuthReducerInterfaces'
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(authReducer, null, () => init())
+  const [state, dispatch] = useReducer(authReducer, initialAuthState)
+  // While login/register is running, those functions update the state themselves
+  const busy = useRef(false)
 
+  // Firebase keeps the session, so we only listen to it (no localStorage needed)
   useEffect(() => {
-    try {
-      localStorage.setItem(KEY, JSON.stringify(state))
-    } catch {
-      // ignore storage errors
-    }
-  }, [state])
-
-  // Mock login: accepts any non-empty username and password.
-  // Unknown usernames fall back to the default mock user.
-  const login = (username: string, password: string) => {
-    if (!username.trim() || !password.trim()) return false
-    const found = users.find((u) => u.username === normalizeUsername(username))
-    dispatch({ type: 'login', payload: found ?? users[0] })
-    return true
-  }
-
-  const register = (data: RegisterData) => {
-    dispatch({
-      type: 'login',
-      payload: {
-        id: users[0].id,
-        fullName: data.fullName.trim(),
-        username: normalizeUsername(data.username),
-        email: data.email.trim().toLowerCase(),
-      },
+    return onAuthChange(async (uid) => {
+      if (busy.current) return
+      if (!uid) {
+        dispatch({ type: 'logout' })
+        return
+      }
+      try {
+        const profile = await fetchProfile(uid)
+        if (profile) {
+          dispatch({ type: 'login', payload: profile })
+        } else {
+          await logoutUser()
+          dispatch({ type: 'logout' })
+        }
+      } catch {
+        dispatch({ type: 'logout' })
+      }
     })
+  }, [])
+
+  const run = async (action: () => Promise<AuthUser>) => {
+    busy.current = true
+    try {
+      dispatch({ type: 'login', payload: await action() })
+    } finally {
+      busy.current = false
+    }
   }
 
-  const loginWithGoogle = () => dispatch({ type: 'login', payload: users[0] })
-  const logout = () => dispatch({ type: 'logout' })
+  const login = (username: string, password: string) => run(() => loginWithUsername(username, password))
+  const register = (data: RegisterData) => run(() => registerUser(data))
+  const loginWithGoogle = () => run(() => signInWithGoogle())
+  const logout = async () => {
+    await logoutUser()
+    dispatch({ type: 'logout' })
+  }
 
   return (
     <AuthContext.Provider value={{ ...state, login, register, loginWithGoogle, logout }}>

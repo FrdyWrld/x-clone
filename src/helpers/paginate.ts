@@ -7,9 +7,7 @@ export interface PaginatedResult<T> {
   total: number
 }
 
-/**
- * Paginates an in-memory list. Maximum 10 items per page by default.
- */
+
 export function paginate<T>(
   items: T[],
   page = 1,

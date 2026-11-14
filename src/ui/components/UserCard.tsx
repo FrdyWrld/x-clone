@@ -5,7 +5,7 @@ interface Props {
   user: UserProfile;
   showFollow?: boolean;
   following?: boolean;
-  onFollow?: (id: number) => void;
+  onFollow?: (id: string) => void;
 }
 
 export const UserCard = ({ user, showFollow, following, onFollow }: Props) => (
