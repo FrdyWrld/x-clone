@@ -7,6 +7,7 @@ import { FeedPage } from '../pages/FeedPage'
 import { FollowingPage } from '../pages/FollowingPage'
 import { FollowersPage } from '../pages/FollowersPage'
 import { UserTweetsPage } from '../pages/UserTweetsPage'
+import { UserConnectionsPage } from '../pages/UserConnectionsPage'
 import { NavBar } from '../ui/components/NavBar'
 import { ProtectedRoute } from './ProtectedRoute'
 import { PublicRoute } from './PublicRoute'
@@ -14,7 +15,7 @@ import { PublicRoute } from './PublicRoute'
 const Layout = () => (
   <div className="min-vh-100 bg-body-tertiary">
     <NavBar />
-    <main className="pb-5">
+    <main className="container pt-3 pb-5" style={{ maxWidth: 640 }}>
       <Outlet />
     </main>
   </div>
@@ -33,6 +34,8 @@ export const BaseRouter = () => (
         <Route path="following" element={<FollowingPage />} />
         <Route path="followers" element={<FollowersPage />} />
         <Route path="users/:username" element={<UserTweetsPage />} />
+        <Route path="users/:username/followers" element={<UserConnectionsPage kind="followers" />} />
+        <Route path="users/:username/following" element={<UserConnectionsPage kind="following" />} />
       </Route>
     </Route>
 

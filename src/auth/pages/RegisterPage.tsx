@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/useAuth'
+import { toMessage } from '../../firebase/errors'
 
 const initialForm = { fullName: '', username: '', email: '', password: '' }
 
@@ -8,14 +9,24 @@ export const RegisterPage = () => {
   const { register } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState(initialForm)
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   const onChange = (field: keyof typeof form) => (e: ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [field]: e.target.value })
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    register(form)
-    navigate('/')
+    setError('')
+    setSubmitting(true)
+    try {
+      await register(form)
+      navigate('/')
+    } catch (err) {
+      setError(toMessage(err))
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -49,6 +60,7 @@ export const RegisterPage = () => {
                   onChange={onChange('username')}
                 />
               </div>
+              <div className="form-text">3 a 20 caracteres: letras, números o guion bajo.</div>
             </div>
 
             <div className="mb-3">
@@ -79,9 +91,15 @@ export const RegisterPage = () => {
               <div className="form-text">Mínimo 6 caracteres.</div>
             </div>
 
+            {error && (
+              <div className="alert alert-danger py-2" role="alert">
+                {error}
+              </div>
+            )}
+
             <div className="d-grid">
-              <button type="submit" className="btn btn-primary btn-lg rounded-pill">
-                Registrarme
+              <button type="submit" className="btn btn-primary btn-lg rounded-pill" disabled={submitting}>
+                {submitting ? 'Creando cuenta...' : 'Registrarme'}
               </button>
             </div>
           </form>

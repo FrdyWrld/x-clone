@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // username -> owner (uniqueness and login by username)
+    match /usernames/{name} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /users/{uid} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow update, delete: if false;
+    }
+
+    // A tweet has text (up to 280 characters), up to 4 attachments, or both
+    match /tweets/{id} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 280
+        && request.resource.data.media is list
+        && request.resource.data.media.size() <= 4
+        && (request.resource.data.text.size() > 0 || request.resource.data.media.size() > 0);
+      allow update, delete: if false;
+    }
+
+    match /follows/{id} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.followerId == request.auth.uid
+        && id == request.resource.data.followerId + '_' + request.resource.data.followedId;
+      allow delete: if request.auth != null && resource.data.followerId == request.auth.uid;
+      allow update: if false;
+    }
+  }
+}

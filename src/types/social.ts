@@ -1,13 +1,22 @@
 export interface UserProfile {
-  id: number
+  id: string
   fullName: string
   username: string
   email: string
 }
 
+export interface TweetMedia {
+  url: string
+  type: 'image' | 'video'
+  path: string // location in Firebase Storage
+}
+
 export interface Tweet {
-  id: number
-  userId: number
+  id: string
+  userId: string
   text: string
   createdAt: string
+  authorUsername: string
+  authorFullName: string
+  media: TweetMedia[]
 }

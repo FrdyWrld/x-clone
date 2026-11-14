@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/useAuth'
+import { toMessage } from '../../firebase/errors'
 
 export const LoginPage = () => {
   const { login, loginWithGoogle } = useAuth()
@@ -8,16 +9,28 @@ export const LoginPage = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  const attempt = async (action: () => Promise<void>) => {
+    setError('')
+    setSubmitting(true)
+    try {
+      await action()
+      navigate('/')
+    } catch (e) {
+      setError(toMessage(e))
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
-    if (login(username, password)) navigate('/')
-    else setError('Ingresa usuario y contraseña.')
-  }
-
-  const onGoogle = () => {
-    loginWithGoogle()
-    navigate('/')
+    if (!username.trim() || !password) {
+      setError('Ingresa usuario y contraseña.')
+      return
+    }
+    attempt(() => login(username, password))
   }
 
   return (
@@ -59,8 +72,8 @@ export const LoginPage = () => {
             )}
 
             <div className="d-grid mt-4">
-              <button type="submit" className="btn btn-primary btn-lg rounded-pill">
-                Entrar
+              <button type="submit" className="btn btn-primary btn-lg rounded-pill" disabled={submitting}>
+                {submitting ? 'Entrando...' : 'Entrar'}
               </button>
             </div>
           </form>
@@ -75,7 +88,8 @@ export const LoginPage = () => {
             <button
               type="button"
               className="btn btn-outline-secondary btn-lg rounded-pill"
-              onClick={onGoogle}
+              disabled={submitting}
+              onClick={() => attempt(loginWithGoogle)}
             >
               <i className="bi bi-google me-2"></i>
               Continuar con Google

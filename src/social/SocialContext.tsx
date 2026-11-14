@@ -1,14 +1,13 @@
 import { createContext } from 'react'
-import type { Tweet } from '../types/social'
+import type { UserProfile } from '../types/social'
 
 export interface SocialContextValue {
-  tweets: Tweet[]
-  followingIds: number[]
-  followerIds: number[]
-  isFollowing: (userId: number) => boolean
-  follow: (userId: number) => void
-  addTweet: (text: string) => void
-  getCounts: (userId: number) => { followers: number; following: number }
+  ready: boolean // true once the logged-in user's follow lists have been loaded
+  followingIds: string[]
+  followerIds: string[]
+  isFollowing: (userId: string) => boolean
+  followByUsername: (username: string) => Promise<UserProfile>
+  followById: (userId: string) => Promise<UserProfile>
 }
 
 export const SocialContext = createContext<SocialContextValue | undefined>(undefined)
