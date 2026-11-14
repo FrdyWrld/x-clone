@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Tweet, UserProfile } from '../../types/social'
 import { formatDate } from '../../helpers/formatDate'
+import { MediaGallery } from './MediaGallery'
 
 interface Props {
   tweet: Tweet
@@ -38,9 +39,13 @@ export const TweetCard = ({ tweet, author }: Props) => (
             <time className="text-muted">{formatDate(tweet.createdAt)}</time>
           </header>
 
-          <p className="mb-0" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
-            {tweet.text}
-          </p>
+          {tweet.text && (
+            <p className="mb-0" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+              {tweet.text}
+            </p>
+          )}
+
+          <MediaGallery media={tweet.media} />
         </div>
       </div>
     </div>
